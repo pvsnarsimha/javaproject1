@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <title>Edit Hotel - Online Hotel Booking System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        body {
+            background-image: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+        }
+        .content-overlay {
+            background-color: rgba(255, 255, 255, 0.85);
+            min-height: 100vh;
+            padding: 1.5rem;
+        }
+        nav {
+            background-color: #2563eb;
+            z-index: 10;
+            position: relative;
+        }
+    </style>
+</head>
+<body class="font-sans">
+    <nav class="bg-blue-600 text-white p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="/" class="text-xl font-bold">OHBS</a>
+            <div class="space-x-4">
+                <a href="/hotels" class="hover:underline">Hotels</a>
+                <a th:if="${#authentication == null || !#authentication.authenticated}" href="/login" class="hover:underline">Login</a>
+                <a th:if="${#authentication == null || !#authentication.authenticated}" href="/register" class="hover:underline">Register</a>
+                <a sec:authorize="hasRole('CUSTOMER')" href="/customer/dashboard" class="hover:underline">Dashboard</a>
+                <a sec:authorize="hasRole('CUSTOMER')" href="/customer/bookings/history" class="hover:underline">Booking History</a>
+                <a sec:authorize="hasRole('MANAGER')" href="/manager/dashboard" class="hover:underline">Manager Dashboard</a>
+                <a sec:authorize="hasRole('MANAGER')" href="/manager/hotels" class="hover:underline">Manage Hotels</a>
+                <a sec:authorize="hasRole('ADMIN')" href="/admin/dashboard" class="hover:underline">Admin Dashboard</a>
+                <a sec:authorize="isAuthenticated()" href="/logout" class="hover:underline">Logout</a>
+            </div>
+        </div>
+    </nav>
+    <div class="content-overlay">
+        <div class="container mx-auto p-6">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6">Edit Hotel</h2>
+            <div th:if="${successMessage}" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+                <span th:text="${successMessage}"></span>
+            </div>
+            <div th:if="${errorMessage}" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                <span th:text="${errorMessage}"></span>
+            </div>
+            <div th:if="${hotel != null}" class="bg-white p-6 rounded-lg shadow-md">
+                <h3 class="text-xl font-semibold mb-4">Edit Hotel Details</h3>
+                <form th:action="@{/manager/hotels/{id}/edit(id=${hotel.id})}" th:object="${hotel}" method="post" class="space-y-4">
+                    <div>
+                        <label for="name" class="block text-gray-700 font-semibold">Hotel Name</label>
+                        <input type="text" id="name" th:field="*{name}" class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600" required/>
+                    </div>
+                    <div>
+                        <label for="address" class="block text-gray-700 font-semibold">Address</label>
+                        <input type="text" id="address" th:field="*{address}" class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600" required/>
+                    </div>
+                    <div>
+                        <label for="contactInfo" class="block text-gray-700 font-semibold">Contact Info</label>
+                        <input type="text" id="contactInfo" th:field="*{contactInfo}" class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600" required/>
+                    </div>
+                    <div>
+                        <label for="description" class="block text-gray-700 font-semibold">Description</label>
+                        <textarea id="description" th:field="*{description}" class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600" rows="4"></textarea>
+                    </div>
+                    <div>
+                        <label for="amenities" class="block text-gray-700 font-semibold">Amenities (comma-separated)</label>
+                        <input type="text" id="amenities" th:field="*{amenities}" th:value="${#strings.listJoin(hotel.amenities, ', ')}" class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"/>
+                        <p class="text-gray-500 text-sm mt-1">E.g., Wi-Fi, Pool, Gym</p>
+                    </div>
+                    <div>
+                        <label for="images" class="block text-gray-700 font-semibold">Image URLs (comma-separated)</label>
+                        <input type="text" id="images" th:field="*{images}" th:value="${#strings.listJoin(hotel.images, ', ')}" class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"/>
+                        <p class="text-gray-500 text-sm mt-1">E.g., https://example.com/image1.jpg, https://example.com/image2.jpg</p>
+                    </div>
+                    <div class="flex justify-end space-x-2">
+                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">Save Changes</button>
+                        <a th:href="@{/manager/hotels}" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition">Cancel</a>
+                        <a th:href="@{/manager/dashboard}" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">Back to Dashboard</a>
+                    </div>
+                </form>
+            </div>
+            <div th:unless="${hotel != null}" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                <span>Hotel not found. Please select a valid hotel to edit.</span>
+            </div>
+            <div class="mt-4">
+                <a th:href="@{/manager/hotels}" class="text-blue-600 hover:underline">Back to Hotel List</a>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

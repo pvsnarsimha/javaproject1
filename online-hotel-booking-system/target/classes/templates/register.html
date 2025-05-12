@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Register - Online Hotel Booking System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+     <link href="/css/styles.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 font-sans">
+    <nav class="bg-blue-600 text-white p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="/" class="text-xl font-bold">OHBS</a>
+            <div class="space-x-4">
+                <a href="/hotels" class="hover:underline">Hotels</a>
+                <a href="/login" class="hover:underline">Login</a>
+                <a href="/register" class="hover:underline">Register</a>
+            </div>
+        </div>
+    </nav>
+    <div class="container mx-auto p-6">
+        <h2 class="text-3xl font-bold text-gray-800 mb-6">Register</h2>
+        <form th:action="@{/register}" th:object="${user}" method="post" class="bg-white rounded-lg shadow-lg p-6 max-w-lg">
+            <div class="mb-4">
+                <label for="name" class="block text-gray-700 font-semibold">Name:</label>
+                <input type="text" id="name" th:field="*{name}" class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600" required/>
+            </div>
+            <div class="mb-4">
+                <label for="email" class="block text-gray-700 font-semibold">Email:</label>
+                <input type="email" id="email" th:field="*{email}" class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600" required/>
+            </div>
+            <div class="mb-4">
+                <label for="password" class="block text-gray-700 font-semibold">Password:</label>
+                <input type="password" id="password" th:field="*{password}" class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600" required/>
+            </div>
+            <div class="mb-4">
+                <label for="phoneNumber" class="block text-gray-700 font-semibold">Phone Number:</label>
+                <input type="text" id="phoneNumber" th:field="*{phoneNumber}" class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600" required/>
+            </div>
+            <div class="mb-4">
+                <label for="roleName" class="block text-gray-700 font-semibold">Role:</label>
+                <select id="roleName" th:field="*{roleName}" class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600" required>
+                    <option value="ROLE_CUSTOMER">Customer</option>
+                    <option value="ROLE_MANAGER">Manager</option>
+                    <option value="ROLE_ADMIN">Admin</option>
+                </select>
+            </div>
+            <div>
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition w-full">Register</button>
+            </div>
+        </form>
+        <div class="mt-4">
+            <p>Already have an account? <a href="/login" class="text-blue-600 hover:underline">Login here</a>.</p>
+        </div>
+    </div>
+</body>
+</html>
