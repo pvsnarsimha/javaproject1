@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Leela Hyderabad - FAQs</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            color: #333;
+            line-height: 1.6;
+            background-color: #f8f5f0;
+        }
+        h1, h2, h3 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+        }
+        .gold-accent {
+            color: #b89f7b;
+        }
+        .nav {
+            background-color: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+        }
+        .hero {
+            height: 60vh;
+            background-position: center;
+            background-size: cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .hero-overlay {
+            background: linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.7) 100%);
+            position: absolute;
+            inset: 0;
+        }
+        .faq-item {
+            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 1rem;
+        }
+        .faq-question {
+            padding: 1rem;
+            cursor: pointer;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.25rem;
+            color: #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: color 0.3s ease;
+        }
+        .faq-question:hover {
+            color: #b89f7b;
+        }
+        .faq-answer {
+            display: none;
+            padding: 1rem;
+            font-size: 0.9rem;
+            color: #4a4a4a;
+        }
+        .faq-answer.active {
+            display: block;
+        }
+        .faq-toggle {
+            font-size: 1.5rem;
+            color: #b89f7b;
+        }
+        .btn-luxury {
+            background-color: #b89f7b;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+        .btn-luxury:hover {
+            background-color: #9a845e;
+            transform: translateY(-2px);
+        }
+        .close-tab-btn {
+            color: #ffffff;
+            transition: color 0.3s ease;
+        }
+        .close-tab-btn:hover {
+            color: #b89f7b;
+        }
+        #mobile-menu {
+            transition: transform 0.3s ease-in-out;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up {
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav py-4 fixed w-full z-50">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <a href="/" class="text-white text-2xl font-bold">The Leela Hyderabad</a>
+            <div class="hidden md:flex space-x-6 items-center justify-end w-full">
+                <a href="/hotels" class="text-white hover:text-gold-accent transition duration-300">Hotels</a>
+                <a href="/faqs" class="text-white hover:text-gold-accent transition duration-300">FAQs</a>
+                <a th:unless="${param.postLogout} != null" sec:authorize="!isAuthenticated()" href="/login" class="text-white hover:text-gold-accent transition duration-300">Login</a>
+                <a th:unless="${param.postLogout} != null" sec:authorize="!isAuthenticated()" href="/register" class="text-white hover:text-gold-accent transition duration-300">Register</a>
+                <a th:unless="${param.postLogout} != null" sec:authorize="isAuthenticated() and hasRole('ROLE_CUSTOMER')" href="/bookings" class="text-white hover:text-gold-accent transition duration-300">My Bookings</a>
+                <a th:unless="${param.postLogout} != null" sec:authorize="isAuthenticated() and hasRole('ROLE_MANAGER')" href="/manager/hotels" class="text-white hover:text-gold-accent transition duration-300">Manage Hotels</a>
+                <a th:unless="${param.postLogout} != null" sec:authorize="isAuthenticated() and hasRole('ROLE_ADMIN')" href="/admin/dashboard" class="text-white hover:text-gold-accent transition duration-300">Admin Dashboard</a>
+                <a th:unless="${param.postLogout} != null" sec:authorize="isAuthenticated()" href="/logout" class="text-white hover:text-gold-accent transition duration-300">Logout</a>
+                <button th:if="${param.postLogout} != null or ${#authorization.expression('isAuthenticated()')}" onclick="closeTab()" class="close-tab-btn">Close Tab</button>
+            </div>
+            <button id="mobile-menu-button" class="md:hidden text-white focus:outline-none">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="md:hidden hidden bg-gray-900 text-white flex flex-col items-center space-y-4 py-4">
+            <a href="/hotels" class="hover:text-gold-accent transition duration-300">Hotels</a>
+            <a href="/faqs" class="hover:text-gold-accent transition duration-300">FAQs</a>
+            <a th:unless="${param.postLogout} != null" sec:authorize="!isAuthenticated()" href="/login" class="hover:text-gold-accent transition duration-300">Login</a>
+            <a th:unless="${param.postLogout} != null" sec:authorize="!isAuthenticated()" href="/register" class="hover:text-gold-accent transition duration-300">Register</a>
+            <a th:unless="${param.postLogout} != null" sec:authorize="isAuthenticated() and hasRole('ROLE_CUSTOMER')" href="/bookings" class="hover:text-gold-accent transition duration-300">My Bookings</a>
+            <a th:unless="${param.postLogout} != null" sec:authorize="isAuthenticated() and hasRole('ROLE_MANAGER')" href="/manager/hotels" class="hover:text-gold-accent transition duration-300">Manage Hotels</a>
+            <a th:unless="${param.postLogout} != null" sec:authorize="isAuthenticated() and hasRole('ROLE_ADMIN')" href="/admin/dashboard" class="hover:text-gold-accent transition duration-300">Admin Dashboard</a>
+            <a th:unless="${param.postLogout} != null" sec:authorize="isAuthenticated()" href="/logout" class="hover:text-gold-accent transition duration-300">Logout</a>
+            <button th:if="${param.postLogout} != null or ${#authorization.expression('isAuthenticated()')}" onclick="closeTab()" class="close-tab-btn">Close Tab</button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="hero bg-image mt-0" style="background-image: url('https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80');">
+        <div class="hero-overlay"></div>
+        <div class="container mx-auto px-6 text-center text-white relative z-10">
+            <h1 class="text-5xl md:text-6xl font-bold mb-6">Frequently Asked Questions</h1>
+            <p class="text-xl md:text-2xl mb-8 max-w-2xl mx-auto">Find answers to common questions about your stay at The Leela Hyderabad</p>
+        </div>
+    </div>
+
+    <!-- FAQs Section -->
+    <section class="py-16 bg-white">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">General FAQs</h2>
+                <div class="w-24 h-1 bg-gold-accent mx-auto mb-6"></div>
+                <p class="text-lg max-w-3xl mx-auto">Explore answers to frequently asked questions to plan your luxurious stay with ease.</p>
+            </div>
+            <div class="max-w-3xl mx-auto">
+                <div class="faq-item">
+                    <div class="faq-question" role="button" aria-expanded="false" aria-controls="faq1">
+                        <span>What is The Leela Hyderabad?</span>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer" id="faq1">
+                        The Leela Hyderabad is a 5-star luxury hotel located in Banjara Hills, Hyderabad, spanning 2.5 acres. It features 156 exquisitely designed rooms and suites with Warangal-inspired architecture, fine dining at Solcito, a rooftop pool, a world-class spa, and personalized butler service. Explore more at <a href="/hotels" class="text-gold-accent hover:underline">/hotels</a>.
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question" role="button" aria-expanded="false" aria-controls="faq2">
+                        <span>What are the check-in and check-out times?</span>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer" id="faq2">
+                        Check-in is at 2:00 PM, and check-out is at 12:00 PM. Early check-in or late check-out may be available upon request, subject to availability and additional charges. Contact our concierge at +91 40 1234 5678 or <a href="/cdn-cgi/l/email-protection#abc9dec8dec9cdd8cdd0d6d7caebdfd3ded7deded7da85c8c4c6" class="text-gold-accent hover:underline">reservations.hyderabad@theleela.com</a>.
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question" role="button" aria-expanded="false" aria-controls="faq3">
+                        <span>Is parking available at the hotel?</span>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer" id="faq3">
+                        Yes, The Leela Hyderabad offers complimentary valet parking for guests. Self-parking is also available in our secure on-site parking facility at no additional cost. For inquiries, contact our concierge at +91 40 1234 5678.
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question" role="button" aria-expanded="false" aria-controls="faq4">
+                        <span>Does the hotel offer free Wi-Fi?</span>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer" id="faq4">
+                        Complimentary high-speed Wi-Fi is available throughout the hotel, including guest rooms, suites, and public areas. Access is provided upon check-in, with no additional charges.
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question" role="button" aria-expanded="false" aria-controls="faq5">
+                        <span>Are pets allowed at The Leela Hyderabad?</span>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer" id="faq5">
+                        Small pets (up to 15 kg) are permitted in select rooms with prior approval and a cleaning fee. Please contact our concierge at +91 40 1234 5678 or <a href="/cdn-cgi/l/email-protection#b6c4d3c5d3c4c0d5c0ddd9d8c5f6c2ced3dad3d3daded398d5d9db" class="text-gold-accent hover:underline">reservations.hyderabad@theleela.com</a> to arrange.
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question" role="button" aria-expanded="false" aria-controls="faq6">
+                        <span>Is the hotel accessible for guests with disabilities?</span>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer" id="faq6">
+                        Yes, The Leela Hyderabad is fully accessible, offering wheelchair-friendly rooms, ramps, elevators, and accessible public areas. Contact our concierge at +91 40 1234 5678 for specific accommodations.
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question" role="button" aria-expanded="false" aria-controls="faq7">
+                        <span>What is the cancellation policy for bookings?</span>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer" id="faq7">
+                        Most bookings can be canceled up to 48 hours before check-in without penalty, though terms may vary. Log in at <a href="/bookings" class="text-gold-accent hover:underline">/bookings</a> to review your booking details or contact our concierge at +91 40 1234 5678.
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question" role="button" aria-expanded="false" aria-controls="faq8">
+                        <span>How can I contact the hotel for further assistance?</span>
+                        <span class="faq-toggle">+</span>
+                    </div>
+                    <div class="faq-answer" id="faq8">
+                        Reach our 24/7 concierge at +91 40 1234 5678 or email <a href="/cdn-cgi/l/email-protection#bad8cfe9d8cfcbdecbd6d0d1ccfacdd1dcd5dcdcd5d894d9d5d7" class="text-gold-accent hover:underline">reservations.hyderabad@theleela.com</a>. You can also use our chatbot or visit <a href="/" class="text-gold-accent hover:underline">/hotels</a> for more options.
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-12">
+                <a href="/" class="btn-luxury inline-block">Back to Home</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="container mx-auto px-6">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4 gold-accent">The Leela Hyderabad</h3>
+                    <p class="mb-4">A 5-star luxury hotel blending Deccan heritage with modern sophistication.</p>
+                    <p>Banjara Hills, Hyderabad</p>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="/hotels" class="hover:text-gold-accent transition duration-300">Rooms & Suites</a></li>
+                        <li><a href="#" class="hover:text-gold-accent transition duration-300">Dining</a></li>
+                        <li><a href="#" class="hover:text-gold-accent transition duration-300">Spa & Wellness</a></li>
+                        <li><a href="#" class="hover:text-gold-accent transition duration-300">Events</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Contact Us</h4>
+                    <ul class="space-y-2">
+                        <li>+91 40 1234 5678</li>
+                        <li><a href="/cdn-cgi/l/email-protection#1e7c6b7d6b7c786d786573726f5e6a767b727b7b727f307d7173" class="hover:text-gold-accent transition duration-300">reservations.hyderabad@theleela.com</a></li>
+                        <li>24/7 Concierge Service</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Connect With Us</h4>
+                    <div class="flex space-x-4">
+                        <a href="#" class="hover:text-gold-accent transition duration-300">Facebook</a>
+                        <a href="#" class="hover:text-gold-accent transition duration-300">Instagram</a>
+                        <a href="#" class="hover:text-gold-accent transition duration-300">Twitter</a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-12 pt-8 text-center text-sm">
+                <p>© 2025 The Leela Hyderabad. All rights reserved.</p>
+                <p class="mt-2"><a href="https://www.theleela.com/the-leela-hyderabad" class="text-gold-accent hover:underline" target="_blank">Visit Official Website</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Mobile Menu Toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Close Tab Function
+        function closeTab() {
+            window.close();
+            setTimeout(() => {
+                if (!window.closed) {
+                    alert('Unable to close the tab automatically. Please close it manually using Ctrl+W or Cmd+W.');
+                }
+            }, 500);
+        }
+
+        // FAQ Accordion Functionality
+        const faqQuestions = document.querySelectorAll('.faq-question');
+        faqQuestions.forEach(question => {
+            question.addEventListener('click', () => {
+                const answer = question.nextElementSibling;
+                const toggle = question.querySelector('.faq-toggle');
+                const isExpanded = question.getAttribute('aria-expanded') === 'true';
+
+                // Toggle answer visibility
+                answer.classList.toggle('active');
+                question.setAttribute('aria-expanded', !isExpanded);
+                toggle.textContent = isExpanded ? '+' : '−';
+
+                // Close other open FAQs
+                faqQuestions.forEach(otherQuestion => {
+                    if (otherQuestion !== question) {
+                        const otherAnswer = otherQuestion.nextElementSibling;
+                        const otherToggle = otherQuestion.querySelector('.faq-toggle');
+                        otherAnswer.classList.remove('active');
+                        otherQuestion.setAttribute('aria-expanded', 'false');
+                        otherToggle.textContent = '+';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
