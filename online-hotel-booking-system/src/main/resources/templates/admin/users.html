@@ -31,6 +31,12 @@
         .btn-danger {
             background: #ef4444;
         }
+        .filter-container {
+            margin-bottom: 1.5rem;
+        }
+        .filter-container select {
+            max-width: 200px;
+        }
     </style>
 </head>
 <body>
@@ -57,6 +63,15 @@
     </nav>
     <div class="container py-5">
         <h2 class="mb-4 fw-bold text-primary"><i class="fas fa-users me-2"></i>Manage Users</h2>
+        <div class="filter-container">
+            <label for="roleFilter" class="form-label fw-medium">Filter by Role</label>
+            <select id="roleFilter" class="form-select">
+                <option value="all">All</option>
+                <option value="ROLE_CUSTOMER">ROLE_CUSTOMER</option>
+                <option value="ROLE_ADMIN">ROLE_ADMIN</option>
+                <option value="ROLE_MANAGER">ROLE_MANAGER</option>
+            </select>
+        </div>
         <div class="table-responsive">
             <table class="table table-hover">
                 <thead class="table-dark">
@@ -69,8 +84,8 @@
                         <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr th:each="user : ${users}">
+                <tbody id="userTable">
+                    <tr th:each="user : ${users}" th:data-roles="${#strings.listJoin(user.roles.![name], ',')}">
                         <td th:text="${user.id}"></td>
                         <td th:text="${user.name}"></td>
                         <td th:text="${user.email}"></td>
@@ -92,6 +107,20 @@
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('roleFilter').addEventListener('change', function() {
+            const selectedRole = this.value;
+            const rows = document.querySelectorAll('#userTable tr');
 
+            rows.forEach(row => {
+                const roles = row.getAttribute('data-roles') || '';
+                if (selectedRole === 'all' || roles.includes(selectedRole)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    </script>
 </body>
 </html>
