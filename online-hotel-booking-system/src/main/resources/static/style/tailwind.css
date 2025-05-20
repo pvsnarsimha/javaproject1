@@ -1,0 +1,13 @@
+/* Custom styles for The Leela Hyderabad */
+body {
+  font-family: 'Arial', sans-serif;
+}
+
+/* Placeholder for background images */
+.hero-bg {
+  background-image: url('/assets/hero-bg.jpg');
+  background-size: cover;
+  background-position: center;
+}
+
+/* Add more custom styles as needed */
