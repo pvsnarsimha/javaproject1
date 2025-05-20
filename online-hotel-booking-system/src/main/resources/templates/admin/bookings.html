@@ -1,88 +1,107 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>OHBS</title>
-    <link rel="stylesheet" href="/css/styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Bookings - OHBS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .btn-approve {
-            background-color: #28a745; /* Green */
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            cursor: pointer;
+        .table-container {
+            overflow-x: auto;
+            width: 100%;
+            max-width: 1600px; /* Increased for bigger screens */
+            margin: 0 auto; /* Center the table on larger screens */
         }
-        .btn-approve:hover {
-            background-color: #218838; /* Darker green */
-        }
-        .btn-reject {
-            background-color: #dc3545; /* Red */
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            cursor: pointer;
-        }
-        .btn-reject:hover {
-            background-color: #c82333; /* Darker red */
-        }
-        .btn-sm {
-            font-size: 0.875rem;
-        }
-        .d-inline {
-            display: inline;
+        .min-w-table {
+            min-width: 1200px; /* Ensures all columns have enough space */
         }
     </style>
 </head>
-<body>
-    <header>
-        <nav>
-            <a href="/hotels">Hotels</a>
-            <a href="/admin/dashboard">Admin Dashboard</a>
-            <a href="/logout">Logout</a>
-        </nav>
-    </header>
+<body class="bg-gray-100 font-sans">
+    <!-- Navigation Bar -->
+    <nav class="bg-blue-600 text-white p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="/" class="text-2xl font-bold">OHBS</a>
+            <div class="space-x-4">
+                <a href="/login" class="hover:underline" th:if="${#authentication == null or !#authentication.authenticated}">Login</a>
+                <a href="/register" class="hover:underline" th:if="${#authentication == null or !#authentication.authenticated}">Register</a>
+                <a href="/manager/dashboard" class="hover:underline" th:if="${#authorization.expression('hasRole(''ROLE_MANAGER'')')}">Manager Dashboard</a>
+                <a href="/manager/hotels" class="hover:underline" th:if="${#authorization.expression('hasRole(''ROLE_MANAGER'')')}">Manage Hotels</a>
+                <a href="/admin/dashboard" class="hover:underline" th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">Admin Dashboard</a>
+                <a href="/logout" class="hover:underline" th:if="${#authentication != null and #authentication.authenticated}">Logout</a>
+            </div>
+        </div>
+    </nav>
 
-    <main>
-        <h1>Manage Bookings</h1>
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>User</th>
-                    <th>Hotel</th>
-                    <th>Room Type</th>
-                    <th>Number of Rooms</th>
-                    <th>Check-In Date</th>
-                    <th>Check-Out Date</th>
-                    <th>Total Cost</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr th:each="booking : ${bookings}">
-                    <td th:text="${booking.id}"></td>
-                    <td th:text="${booking.user.name}"></td>
-                    <td th:text="${booking.hotel.name}"></td>
-                    <td th:text="${booking.room.type}"></td>
-                    <td th:text="${booking.numberOfRooms}"></td>
-                    <td th:text="${booking.checkInDate}"></td>
-                    <td th:text="${booking.checkOutDate}"></td>
-                    <td th:text="'₹' + ${booking.totalCost}"></td>
-                    <td th:text="${booking.status}"></td>
-                    <td>
-                        <form th:if="${booking.status == T(com.obhs.entity.BookingStatus).PENDING}"
-                              th:action="@{/admin/bookings/{id}/approve(id=${booking.id})}" method="post" class="d-inline">
-                            <button type="submit" class="btn btn-approve btn-sm"><i class="fas fa-check me-1"></i>Approve</button>
-                        </form>
-                        <form th:if="${booking.status == T(com.obhs.entity.BookingStatus).PENDING}"
-                              th:action="@{/admin/bookings/{id}/reject(id=${booking.id})}" method="post" class="d-inline">
-                            <button type="submit" class="btn btn-reject btn-sm"><i class="fas fa-times me-1"></i>Reject</button>
-                        </form>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <a href="/admin/dashboard">Back to Dashboard</a>
-    </main>
+    <!-- Main Content -->
+    <div class="container mx-auto mt-8 p-4">
+        <h1 class="text-3xl font-bold mb-6">Manage Bookings</h1>
+
+        <!-- Bookings Table -->
+        <div class="table-container">
+            <div class="bg-white shadow-md rounded-lg overflow-hidden">
+                <table class="min-w-table divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hotel</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room Type</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Number of Rooms</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Check-In Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Check-Out Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Cost</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <tr th:each="booking : ${bookings}">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" th:text="${booking.id}"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" th:text="${booking.user.name}"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" th:text="${booking.hotel.name}"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" th:text="${booking.room.type}"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" th:text="${booking.numberOfRooms}"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" th:text="${booking.checkInDate}"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" th:text="${booking.checkOutDate}"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" th:text="'₹' + ${#numbers.formatDecimal(booking.totalCost, 1, 2)}"></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" th:text="${booking.status}">
+                                <span th:if="${booking.status == 'PENDING'}" class="text-yellow-600">PENDING</span>
+                                <span th:if="${booking.status == 'CONFIRMED'}" class="text-green-600">CONFIRMED</span>
+                                <span th:if="${booking.status == 'CANCELED'}" class="text-red-600">CANCELED</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" th:text="${booking.paymentStatus}">
+                                <span th:if="${booking.paymentStatus == 'PENDING'}" class="text-yellow-600">PENDING</span>
+                                <span th:if="${booking.paymentStatus == 'SUCCESSFUL'}" class="text-green-600">SUCCESSFUL</span>
+                                <span th:if="${booking.paymentStatus == 'FAILED'}" class="text-red-600">FAILED</span>
+                                <span th:if="${booking.paymentStatus == 'REFUNDED'}" class="text-blue-600">REFUNDED</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <div th:if="${booking.status == T(com.obhs.entity.BookingStatus).PENDING}">
+                                    <form th:action="@{/admin/bookings/{id}/approve(id=${booking.id})}" method="post" class="inline">
+                                        <button type="submit" class="text-green-600 hover:text-green-800 text-sm mr-2">Approve</button>
+                                    </form>
+                                    <form th:action="@{/admin/bookings/{id}/reject(id=${booking.id})}" method="post" class="inline">
+                                        <button type="submit" class="text-red-600 hover:text-red-800 text-sm">Reject</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tbody th:if="${bookings == null or bookings.isEmpty()}">
+                        <tr>
+                            <td colspan="11" class="px-6 py-4 text-center text-sm text-gray-500">No bookings found</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Back to Dashboard -->
+        <div class="mt-6">
+            <a href="/admin/dashboard" class="text-blue-600 hover:underline">Back to Dashboard</a>
+        </div>
+    </div>
 </body>
 </html>
