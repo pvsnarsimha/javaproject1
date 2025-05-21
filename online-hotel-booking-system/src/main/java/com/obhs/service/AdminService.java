@@ -1,6 +1,7 @@
 package com.obhs.service;
 
 import com.obhs.entity.*;
+import com.obhs.entity.Booking.PaymentStatus;
 import com.obhs.repository.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,11 +36,50 @@ public class AdminService {
     private FailedNotificationRepository failedNotificationRepository;
 
     @Autowired
+    private RoleRepository roleRepository;
+
+    @Autowired
     private BookingService bookingService;
 
     // User Management
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public List<User> getAllUsers(String role) {
+        List<User> users = userRepository.findAll();
+        if (role != null && !role.isEmpty()) {
+            users = users.stream()
+                .filter(user -> user.getRoles() != null && user.getRoles().stream()
+                    .anyMatch(r -> r.getName().equals(role)))
+                .collect(Collectors.toList());
+            logger.info("Fetched {} users with role {}", users.size(), role);
+        } else {
+            logger.info("Fetched {} users", users.size());
+        }
+        users.forEach(user -> logger.info("User {} ({}): Roles = {}", user.getId(), user.getEmail(), 
+            user.getRoles() != null ? user.getRoles().stream().map(Role::getName).collect(Collectors.joining(", ")) : "None"));
+        return users;
+    }
+    public User getUserById(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        logger.info("Fetched user {} ({}): Roles = {}", user.getId(), user.getEmail(), 
+            user.getRoles() != null ? user.getRoles().stream().map(Role::getName).collect(Collectors.joining(", ")) : "None");
+        return user;
+    }
+
+    @Transactional
+    public void updateUser(User user, String roleName) {
+        User existingUser = userRepository.findById(user.getId())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        existingUser.setName(user.getName());
+        existingUser.setEmail(user.getEmail());
+        existingUser.setPhoneNumber(user.getPhoneNumber());
+        if (roleName != null && !roleName.isEmpty()) {
+            Role role = roleRepository.findByName(roleName)
+                    .orElseThrow(() -> new IllegalArgumentException("Role not found: " + roleName));
+            existingUser.setRoles(new HashSet<>()); // Clear existing roles
+            existingUser.getRoles().add(role); // Add the new role
+            logger.info("Updated user {} ({}): Set role to {}", existingUser.getId(), existingUser.getEmail(), roleName);
+        }
+        userRepository.save(existingUser);
     }
 
     @Transactional
@@ -122,16 +164,17 @@ public class AdminService {
     }
 
     // Booking Management
-    public List<Booking> getAllBookings(String status) {
+    public List<Booking> getAllBookings(String status, String paymentStatus) {
         List<Booking> bookings = bookingRepository.findAll();
         logger.debug("Retrieved {} bookings", bookings.size());
+
+        // Filter by status if provided
         if (status != null && !status.isEmpty()) {
             try {
-                // Normalize status to handle legacy 'CANCELED'
-                String normalizedStatus = status.equalsIgnoreCase("CANCELED") ? "CANCELLED" : status.toUpperCase();
+                String normalizedStatus = status.equalsIgnoreCase("CANCELED") ? "CANCELED" : status.toUpperCase();
                 logger.debug("Filtering bookings by normalized status: {}", normalizedStatus);
                 BookingStatus bookingStatus = BookingStatus.valueOf(normalizedStatus);
-                return bookings.stream()
+                bookings = bookings.stream()
                     .filter(b -> b.getStatus() == bookingStatus)
                     .collect(Collectors.toList());
             } catch (IllegalArgumentException e) {
@@ -139,9 +182,25 @@ public class AdminService {
                 throw new IllegalArgumentException("Invalid status: " + status, e);
             }
         }
+
+        // Filter by payment status if provided
+        if (paymentStatus != null && !paymentStatus.isEmpty()) {
+            try {
+                String normalizedPaymentStatus = paymentStatus.toUpperCase();
+                logger.debug("Filtering bookings by payment status: {}", normalizedPaymentStatus);
+                PaymentStatus paymentStatusEnum = PaymentStatus.valueOf(normalizedPaymentStatus);
+                bookings = bookings.stream()
+                    .filter(b -> b.getPaymentStatus() == paymentStatusEnum)
+                    .collect(Collectors.toList());
+            } catch (IllegalArgumentException e) {
+                logger.error("Invalid payment status: {}", paymentStatus, e);
+                throw new IllegalArgumentException("Invalid payment status: " + paymentStatus, e);
+            }
+        }
+
+        logger.debug("After filtering: {} bookings", bookings.size());
         return bookings;
     }
-
     @Transactional
     public void approveBooking(Long bookingId) {
         bookingService.confirmBooking(bookingId);
