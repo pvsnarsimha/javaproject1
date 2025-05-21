@@ -2,7 +2,10 @@ package com.obhs.controller;
 
 import com.obhs.entity.Hotel;
 import com.obhs.entity.Room;
+import com.obhs.entity.User;
 import com.obhs.service.AdminService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,6 +18,8 @@ import jakarta.validation.Valid;
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
+
+    private static final Logger logger = LoggerFactory.getLogger(AdminController.class);
 
     @Autowired
     private AdminService adminService;
@@ -29,9 +34,39 @@ public class AdminController {
     }
 
     @GetMapping("/users")
-    public String listUsers(Model model) {
-        model.addAttribute("users", adminService.getAllUsers());
+    public String listUsers(@RequestParam(value = "role", required = false) String role, Model model) {
+        model.addAttribute("users", adminService.getAllUsers(role));
+        model.addAttribute("selectedRole", role);
         return "admin/users";
+    }
+
+    @GetMapping("/users/edit/{id}")
+    public String editUserForm(@PathVariable Long id, Model model) {
+        User user = adminService.getUserById(id);
+        model.addAttribute("user", user);
+        return "admin/edit-user";
+    }
+
+    @PostMapping("/users/edit")
+    public String updateUser(@Valid @ModelAttribute("user") User user, 
+                             BindingResult result,
+                             @RequestParam("role") String role,
+                             Model model, 
+                             RedirectAttributes redirectAttributes) {
+        if (result.hasErrors()) {
+            model.addAttribute("user", user);
+            return "admin/edit-user";
+        }
+        try {
+            logger.info("Updating user with ID: {}, Role: {}", user.getId(), role);
+            adminService.updateUser(user, role);
+            redirectAttributes.addFlashAttribute("successMessage", "User updated successfully.");
+        } catch (Exception e) {
+            logger.error("Failed to update user with ID: {}. Error: {}", user.getId(), e.getMessage(), e);
+            String errorMessage = "Failed to update user: " + (e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName());
+            redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
+        }
+        return "redirect:/admin/users";
     }
 
     @PostMapping("/users/delete/{id}")
@@ -126,12 +161,14 @@ public class AdminController {
     }
 
     @GetMapping("/bookings")
-    public String listBookings(@RequestParam(value = "status", required = false) String status, Model model) {
-        model.addAttribute("bookings", adminService.getAllBookings(status));
+    public String listBookings(@RequestParam(value = "status", required = false) String status,
+                               @RequestParam(value = "paymentStatus", required = false) String paymentStatus,
+                               Model model) {
+        model.addAttribute("bookings", adminService.getAllBookings(status, paymentStatus));
         model.addAttribute("selectedStatus", status);
+        model.addAttribute("selectedPaymentStatus", paymentStatus);
         return "admin/bookings";
     }
-
     @PostMapping("/bookings/{id}/approve")
     public String approveBooking(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
