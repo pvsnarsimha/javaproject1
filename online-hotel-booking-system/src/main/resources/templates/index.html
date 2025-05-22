@@ -372,6 +372,23 @@
     outline: none;
     box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.5); /* gold-accent shadow */
 }
+.btn-exit {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        .btn-exit:hover {
+            background-color: #c82333;
+        }
+        .exit-container {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 1000;
+        }
     </style>
 </head>
 <body>
@@ -393,6 +410,7 @@
                     <option value="hi">Hindi</option>
                      <option value="te">Telugu</option>
                 </select>   
+                 <button id="exitButton" style="background-color: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">Exit</button>
             <a sec:authorize="isAuthenticated() and hasRole('ROLE_CUSTOMER')"
                href="/customer/bookings"
                class="text-white hover:text-gold-accent transition duration-300">My Bookings</a>
@@ -409,6 +427,7 @@
                     onclick="closeTab()"
                     class="close-tab-btn">Close Tab</button>
         </div>
+       
         <button id="mobile-menu-button" class="md:hidden text-white focus:outline-none">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
@@ -446,6 +465,7 @@
             class="close-tab-btn">Close Tab</button>
 </div>
 </nav>
+
     <!-- Hero Section -->
     <div class="hero bg-image mt-0" style="background-image: url('https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80');">
         <div class="hero-overlay"></div>
@@ -1133,6 +1153,54 @@
         //     // const data = await response.json();
         //     // return data.queryResult.fulfillmentText;
         // }
-    </script>
+document.getElementById("exitButton").addEventListener("click", function() {
+        fetch("/exit", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === "success") {
+                window.close();
+                // Fallback alert if the tab doesn't close
+                setTimeout(() => {
+                    alert("Tab did not close automatically. Please press Ctrl+W or close the tab manually.");
+                }, 1000);
+            } else {
+                alert(data.message || "Failed to terminate application.");
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("Failed to initiate termination. Please try again.");
+        });
+    });
+
+    document.getElementById("closeTabButton").addEventListener("click", function() {
+        fetch("/exit", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === "success") {
+                window.close();
+                setTimeout(() => {
+                    alert("Tab did not close automatically. Please press Ctrl+W or close the tab manually.");
+                }, 1000);
+            } else {
+                alert(data.message || "Failed to terminate application.");
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("Failed to initiate termination. Please try again.");
+        });
+    });
+</script>
 </body>
 </html>
